@@ -2,6 +2,7 @@ using Domain;
 using Application.Activities;
 using Microsoft.AspNetCore.Mvc;
 using Application.Core;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
