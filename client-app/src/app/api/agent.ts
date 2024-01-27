@@ -11,7 +11,7 @@ const sleep = (delay: number) => {
     })
 }
 
-axios.defaults.baseURL = 'http://localhost:5000/api';
+axios.defaults.baseURL = 'http://localhost:5555/api';
 
 const responseBody = <T>(response: AxiosResponse<T>) => response.data;
 
