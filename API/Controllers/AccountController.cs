@@ -15,7 +15,7 @@ namespace API.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly TokenService _tokenService;
-        
+
         public AccountController(UserManager<AppUser> userManager, TokenService tokenService)
         {
             _tokenService = tokenService;
@@ -26,7 +26,8 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var user = await _userManager.Users.Include(p => p.Photos)
+                .FirstOrDefaultAsync(x => x.Email == loginDto.Email);
 
             if (user is null) return Unauthorized();
 
@@ -56,7 +57,7 @@ namespace API.Controllers
                 return ValidationProblem();
             }
 
-            var user =  new AppUser
+            var user = new AppUser
             {
                 DisplayName = registerDto.DisplayName,
                 Email = registerDto.Email,
@@ -77,7 +78,9 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
-            var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+            var user = await _userManager.Users.Include(p => p.Photos)
+                .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
+
             return CreateUserObject(user);
         }
 
@@ -86,9 +89,9 @@ namespace API.Controllers
             return new UserDto
             {
                 DisplayName = user.DisplayName,
-                Username = user.UserName,
-                Image = null,
-                Token = _tokenService.CreateToken(user)
+                Image = user?.Photos?.FirstOrDefault(x => x.IsMain)?.Url,
+                Token = _tokenService.CreateToken(user),
+                Username = user.UserName
             };
         }
     }
